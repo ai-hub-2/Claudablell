@@ -45,7 +45,7 @@ class LogFilterMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LogFilterMiddleware)
 
-# Enhanced CORS for local development - support multiple ports
+# Enhanced CORS for all environments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -55,11 +55,14 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
         "http://127.0.0.1:3002",
-        "*"  # Fallback for development
+        "https://claudable-web.onrender.com",  # Render frontend
+        "https://claudablell.vercel.app",     # Vercel frontend
+        "*"  # Allow all origins for development
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"]
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Routers
