@@ -9,6 +9,9 @@ import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
+// Debug API base
+console.log('🔧 API_BASE configured as:', API_BASE);
+
 interface GlobalSettingsProps {
   isOpen: boolean;
   onClose: () => void;
@@ -422,16 +425,32 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
 
   const loadApiKeys = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/settings/api-keys/`);
+      console.log(`🔑 Loading API keys...`);
+      console.log(`🌐 API_BASE: ${API_BASE}`);
+      console.log(`📡 Request URL: ${API_BASE}/api/settings/api-keys/`);
+      
+      const response = await fetch(`${API_BASE}/api/settings/api-keys/`, {
+        method: 'GET',
+        headers: { 
+          'Accept': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache'
+      });
+      
+      console.log(`📊 Response status: ${response.status}`);
       
       if (response.ok) {
         const keys = await response.json();
+        console.log(`✅ Loaded API keys:`, keys);
         setApiKeys(keys);
       } else {
-        console.error('Failed to load API keys, status:', response.status);
+        const errorText = await response.text();
+        console.error(`❌ Failed to load API keys, status: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error('Failed to load API keys:', error);
+      console.error('❌ Failed to load API keys:', error);
     }
   };
 
@@ -439,24 +458,39 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
+      console.log(`🔑 Saving API key for ${provider}...`);
+      console.log(`🌐 API_BASE: ${API_BASE}`);
+      console.log(`📡 Request URL: ${API_BASE}/api/settings/api-keys/`);
+      
       const response = await fetch(`${API_BASE}/api/settings/api-keys/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, key })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ provider, key }),
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache'
       });
+      
+      console.log(`📊 Response status: ${response.status}`);
+      console.log(`📊 Response headers:`, Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`❌ API Error: ${response.status} - ${errorText}`);
         throw new Error(`Failed to save API key: ${response.status} ${errorText}`);
       }
       
       const result = await response.json();
+      console.log(`✅ API Response:`, result);
       
       setApiKeys(prev => ({ ...prev, [provider]: key }));
       showToast(`${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key saved successfully!`, 'success');
       
     } catch (error) {
-      console.error('Failed to save API key:', error);
+      console.error('❌ Failed to save API key:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showToast(`Failed to save ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key: ${errorMessage}`, 'error');
     } finally {

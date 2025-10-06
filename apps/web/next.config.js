@@ -6,7 +6,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     scrollRestoration: true,
-  }
+  },
 };
 
 module.exports = nextConfig;

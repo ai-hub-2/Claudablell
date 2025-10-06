@@ -45,12 +45,20 @@ class LogFilterMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LogFilterMiddleware)
 
-# Basic CORS for local development - support multiple ports
+# Enhanced CORS for local development - support multiple ports
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in development
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3002",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+        "*"  # Fallback for development
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"]
 )
 
