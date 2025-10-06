@@ -16,6 +16,13 @@ from app.core.terminal_ui import ui
 
 from ..base import BaseCLI, CLIType
 
+# Try to import stream-json, fallback to manual parsing if not available
+try:
+    import stream_json
+    STREAM_JSON_AVAILABLE = True
+except ImportError:
+    STREAM_JSON_AVAILABLE = False
+
 
 class CursorAgentCLI(BaseCLI):
     """Cursor Agent CLI implementation with stream-json support and session continuity"""

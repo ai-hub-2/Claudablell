@@ -3,18 +3,37 @@ services:
     name: claudable-api
     env: python
     buildCommand: |
-      python3 -m venv .venv
-      source .venv/bin/activate
-      pip install -r apps/api/requirements.txt
-      # Install Node.js for CLI tools
+      # Install Node.js 20
       curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
       sudo apt-get install -y nodejs
-      # Install CLI tools
+      
+      # Set up Python environment
+      python3 -m venv .venv
+      source .venv/bin/activate
+      pip install --upgrade pip
+      pip install -r apps/api/requirements.txt
+      
+      # Install AI Agent CLI tools
+      export PATH="/usr/bin:$PATH"
       npm install -g @anthropic-ai/claude-code
       npm install -g @openai/codex
       npm install -g @google/gemini-cli
       npm install -g @qwen-code/qwen-code
+      
+      # Install Cursor Agent CLI
+      curl -fsSL https://cursor.com/install | bash
+      export PATH="$HOME/.local/bin:$PATH"
+      
+      # Initialize database
+      cd apps/api
+      python -c "
+      from app.db.session import engine
+      from app.db.base import Base
+      Base.metadata.create_all(bind=engine)
+      print('Database initialized')
+      "
     startCommand: |
+      export PATH="$HOME/.local/bin:/usr/bin:$PATH"
       source .venv/bin/activate
       cd apps/api
       python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -31,6 +50,8 @@ services:
         value: true
       - key: NODE_PATH
         value: /usr/bin/node
+      - key: PATH
+        value: /home/render/.local/bin:/usr/bin:/usr/local/bin
     disk:
       name: data
       mountPath: /opt/render/project/data

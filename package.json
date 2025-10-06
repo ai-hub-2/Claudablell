@@ -22,7 +22,10 @@
     "db:backup": "node scripts/backup-db.js",
     "check:agents": "python3 scripts/check_agents.py",
     "check:database": "python3 scripts/check_database.py",
-    "check:all": "npm run check:database && npm run check:agents"
+    "check:all": "npm run check:database && npm run check:agents",
+    "install:agents": "bash scripts/install_agents.sh",
+    "configure:agents": "python3 scripts/configure_agents.py",
+    "setup:agents": "npm run install:agents && npm run configure:agents"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
