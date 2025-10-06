@@ -34,7 +34,7 @@ async def create_or_update_api_key(body: APIKeyCreate, db: Session = Depends(get
     if body.provider not in valid_providers:
         raise HTTPException(status_code=400, detail="Invalid provider")
     
-    if not body.key.strip():
+    if not body.key or not body.key.strip():
         raise HTTPException(status_code=400, detail="API key cannot be empty")
     
     try:

@@ -9,6 +9,7 @@ import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
+
 interface GlobalSettingsProps {
   isOpen: boolean;
   onClose: () => void;
@@ -451,13 +452,26 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/api-keys/`, {
+      // Validate input
+      if (!provider || !key) {
+        throw new Error('Provider and key are required');
+      }
+      
+      // Check if API_BASE is available
+      if (!API_BASE) {
+        throw new Error('API base URL not configured');
+      }
+      
+      const url = `${API_BASE}/api/settings/api-keys/`;
+      const payload = { provider, key };
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ provider, key }),
+        body: JSON.stringify(payload),
         mode: 'cors',
         credentials: 'omit',
         cache: 'no-cache'
@@ -475,7 +489,15 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
       
     } catch (error) {
       console.error('Failed to save API key:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Network error';
+      let errorMessage = 'Unknown error';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error: Unable to connect to server. Please check your connection.';
+        }
+      }
+      
       showToast(`Failed to save ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key: ${errorMessage}`, 'error');
     } finally {
       setApiKeyLoading(prev => ({ ...prev, [provider]: false }));
