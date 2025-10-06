@@ -6,6 +6,7 @@ from app.models.tools import ToolUsage
 from app.models.commits import Commit
 from app.models.env_vars import EnvVar
 from app.models.tokens import ServiceToken
+from app.models.api_keys import APIKey
 from app.models.project_services import ProjectServiceConnection
 from app.models.user_requests import UserRequest
 
@@ -18,6 +19,7 @@ __all__ = [
     "Commit",
     "EnvVar",
     "ServiceToken",
+    "APIKey",
     "ProjectServiceConnection",
     "UserRequest",
 ]

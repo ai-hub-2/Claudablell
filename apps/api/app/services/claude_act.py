@@ -154,8 +154,16 @@ async def generate_diff_with_logging(
     Returns:
         Tuple of (commit_message, changes_summary, session_id)
     """
+    # Get API key from database or environment
+    from app.services.ai_key_manager import get_anthropic_key
+    from app.api.deps import get_db
+    
+    # Get database session
+    db = next(get_db())
+    api_key = get_anthropic_key(db)
+    
     # Claude Code SDK can work without API key in local mode
-    if not os.getenv("ANTHROPIC_API_KEY"):
+    if not api_key:
         print("Note: Running Claude Code SDK in local mode (no API key)")
     
     # Build a simple, direct prompt  
@@ -288,7 +296,7 @@ async def generate_diff_with_logging(
     # If no messages were received, Claude Code SDK might not be working properly
     if message_count == 0:
         print("No messages received from Claude Code SDK - falling back to simple response")
-        response_text = f"I understand you want to: {instruction}\n\nHowever, Claude Code SDK is not fully configured. Please check if Claude Code CLI is installed or set up your ANTHROPIC_API_KEY."
+        response_text = f"I understand you want to: {instruction}\n\nHowever, Claude Code SDK is not fully configured. Please check if Claude Code CLI is installed or configure your Anthropic API key in the settings."
     
     # Extract commit message and summary
     commit_msg = ""

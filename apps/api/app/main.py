@@ -9,6 +9,7 @@ from app.api.assets import router as assets_router
 from app.api.chat import router as chat_router
 from app.api.tokens import router as tokens_router
 from app.api.settings import router as settings_router
+from app.api.api_keys import router as api_keys_router
 from app.api.project_services import router as project_services_router
 from app.api.github import router as github_router
 from app.api.vercel import router as vercel_router
@@ -62,6 +63,7 @@ app.include_router(assets_router)
 app.include_router(chat_router, prefix="/api/chat")  # Unified chat API (includes WebSocket and ACT)
 app.include_router(tokens_router)  # Service tokens API
 app.include_router(settings_router)  # Settings API
+app.include_router(api_keys_router)  # API keys API
 app.include_router(project_services_router)  # Project services API
 app.include_router(github_router)  # GitHub integration API
 app.include_router(vercel_router)  # Vercel integration API

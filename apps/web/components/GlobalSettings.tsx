@@ -12,7 +12,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 interface GlobalSettingsProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'general' | 'ai-agents' | 'services' | 'about';
+  initialTab?: 'general' | 'ai-agents' | 'services' | 'api-keys' | 'about';
 }
 
 interface CLIOption {
@@ -124,9 +124,120 @@ interface ServiceToken {
   last_used?: string;
 }
 
+interface APIKeyProvider {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  getKeyUrl: string;
+  placeholder: string;
+  required: boolean;
+}
+
+const API_KEY_PROVIDERS: APIKeyProvider[] = [
+  {
+    id: 'anthropic',
+    name: 'Anthropic Claude',
+    description: 'API key for Claude AI models',
+    icon: '/claude.png',
+    color: '#DE7356',
+    getKeyUrl: 'https://console.anthropic.com/',
+    placeholder: 'sk-ant-...',
+    required: true
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'API key for GPT models',
+    icon: '/oai.png',
+    color: '#000000',
+    getKeyUrl: 'https://platform.openai.com/api-keys',
+    placeholder: 'sk-...',
+    required: true
+  },
+  {
+    id: 'google',
+    name: 'Google AI',
+    description: 'API key for Gemini models',
+    icon: '/gemini.png',
+    color: '#4285F4',
+    getKeyUrl: 'https://aistudio.google.com/app/apikey',
+    placeholder: 'AI...',
+    required: true
+  },
+  {
+    id: 'qwen',
+    name: 'Qwen AI',
+    description: 'API key for Qwen models',
+    icon: '/qwen.png',
+    color: '#A855F7',
+    getKeyUrl: 'https://dashscope.console.aliyun.com/apiKey',
+    placeholder: 'sk-...',
+    required: true
+  }
+];
+
+interface APIKeyInputProps {
+  provider: APIKeyProvider;
+  onSave: (key: string) => void;
+  isLoading: boolean;
+  placeholder: string;
+}
+
+function APIKeyInput({ provider, onSave, isLoading, placeholder }: APIKeyInputProps) {
+  const [key, setKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+
+  const handleSave = () => {
+    if (key.trim()) {
+      onSave(key.trim());
+      setKey('');
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative">
+        <input
+          type={showKey ? 'text' : 'password'}
+          value={key}
+          onChange={(e) => setKey(e.target.value)}
+          placeholder={placeholder}
+          className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48"
+          disabled={isLoading}
+        />
+        <button
+          type="button"
+          onClick={() => setShowKey(!showKey)}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          {showKey ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          )}
+        </button>
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={!key.trim() || isLoading}
+        className="px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoading ? 'Saving...' : 'Save'}
+      </button>
+    </div>
+  );
+}
+
 export default function GlobalSettings({ isOpen, onClose, initialTab = 'general' }: GlobalSettingsProps) {
   const { theme, toggle: toggleTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<'general' | 'ai-agents' | 'services' | 'about'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'general' | 'ai-agents' | 'services' | 'api-keys' | 'about'>(initialTab);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<'github' | 'supabase' | 'vercel' | null>(null);
   const [tokens, setTokens] = useState<{ [key: string]: ServiceToken | null }>({
@@ -134,6 +245,8 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     supabase: null,
     vercel: null
   });
+  const [apiKeys, setApiKeys] = useState<{ [key: string]: string }>({});
+  const [apiKeyLoading, setApiKeyLoading] = useState<{ [key: string]: boolean }>({});
   const [cliStatus, setCLIStatus] = useState<CLIStatus>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { settings: globalSettings, setSettings: setGlobalSettings, refresh: refreshGlobalSettings } = useGlobalSettings();
@@ -154,6 +267,7 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
       loadAllTokens();
       loadGlobalSettings();
       checkCLIStatus();
+      loadApiKeys();
     }
   }, [isOpen]);
 
@@ -306,6 +420,70 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     }));
   };
 
+  const loadApiKeys = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/settings/api-keys`);
+      if (response.ok) {
+        const keys = await response.json();
+        setApiKeys(keys);
+      }
+    } catch (error) {
+      console.error('Failed to load API keys:', error);
+    }
+  };
+
+  const saveApiKey = async (provider: string, key: string) => {
+    setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
+    
+    try {
+      const response = await fetch(`${API_BASE}/api/settings/api-keys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, key })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save API key');
+      }
+      
+      setApiKeys(prev => ({ ...prev, [provider]: key }));
+      showToast(`${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key saved successfully!`, 'success');
+      
+    } catch (error) {
+      console.error('Failed to save API key:', error);
+      showToast(`Failed to save ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key`, 'error');
+    } finally {
+      setApiKeyLoading(prev => ({ ...prev, [provider]: false }));
+    }
+  };
+
+  const deleteApiKey = async (provider: string) => {
+    setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
+    
+    try {
+      const response = await fetch(`${API_BASE}/api/settings/api-keys/${provider}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete API key');
+      }
+      
+      setApiKeys(prev => {
+        const newKeys = { ...prev };
+        delete newKeys[provider];
+        return newKeys;
+      });
+      showToast(`${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key deleted successfully!`, 'success');
+      
+    } catch (error) {
+      console.error('Failed to delete API key:', error);
+      showToast(`Failed to delete ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key`, 'error');
+    } finally {
+      setApiKeyLoading(prev => ({ ...prev, [provider]: false }));
+    }
+  };
+
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'github':
@@ -385,6 +563,7 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
                 { id: 'general' as const, label: 'General' },
                 { id: 'ai-agents' as const, label: 'AI Agents' },
                 { id: 'services' as const, label: 'Services' },
+                { id: 'api-keys' as const, label: 'API Keys' },
                 { id: 'about' as const, label: 'About' }
               ].map(tab => (
                 <button
@@ -686,6 +865,107 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
                           <p>
                             Tokens configured here will be available for all projects. To connect a project to specific repositories 
                             and services, use the Project Settings in each individual project.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'api-keys' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">API Keys</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                    Configure your AI provider API keys. These keys are stored securely and used for AI model access.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {API_KEY_PROVIDERS.map((provider) => {
+                      const hasKey = !!apiKeys[provider.id];
+                      const isLoading = apiKeyLoading[provider.id];
+                      
+                      return (
+                        <div key={provider.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-3">
+                            <div className="text-gray-700 dark:text-gray-300">
+                              <img src={provider.icon} alt={provider.name} className="w-8 h-8" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-gray-900 dark:text-white">{provider.name}</p>
+                                {hasKey && (
+                                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                )}
+                                {provider.required && (
+                                  <span className="text-xs bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full">
+                                    Required
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {provider.description}
+                              </p>
+                              <a
+                                href={provider.getKeyUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                Get API key →
+                              </a>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {hasKey ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="password"
+                                  value={apiKeys[provider.id] || ''}
+                                  readOnly
+                                  className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 font-mono"
+                                  placeholder={provider.placeholder}
+                                />
+                                <button
+                                  onClick={() => deleteApiKey(provider.id)}
+                                  disabled={isLoading}
+                                  className="px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {isLoading ? 'Deleting...' : 'Delete'}
+                                </button>
+                              </div>
+                            ) : (
+                              <APIKeyInput
+                                provider={provider}
+                                onSave={(key) => saveApiKey(provider.id, key)}
+                                isLoading={isLoading}
+                                placeholder={provider.placeholder}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          API Key Security
+                        </h3>
+                        <div className="mt-2 text-sm text-blue-800 dark:text-blue-200">
+                          <p>
+                            Your API keys are encrypted and stored securely. They are only used to access AI models 
+                            and are never shared with third parties. You can delete them at any time.
                           </p>
                         </div>
                       </div>
