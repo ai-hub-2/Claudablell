@@ -462,13 +462,10 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
 
   const loadApiKeys = async () => {
     try {
-      console.log('Loading API keys from:', `${API_BASE}/api/settings/api-keys/`);
       const response = await fetch(`${API_BASE}/api/settings/api-keys/`);
-      console.log('Load response status:', response.status);
       
       if (response.ok) {
         const keys = await response.json();
-        console.log('Loaded API keys:', keys);
         setApiKeys(keys);
       } else {
         console.error('Failed to load API keys, status:', response.status);
@@ -482,26 +479,18 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      console.log('Saving API key for provider:', provider);
-      console.log('API_BASE:', API_BASE);
-      
       const response = await fetch(`${API_BASE}/api/settings/api-keys/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, key })
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
         throw new Error(`Failed to save API key: ${response.status} ${errorText}`);
       }
       
       const result = await response.json();
-      console.log('Save result:', result);
       
       setApiKeys(prev => ({ ...prev, [provider]: key }));
       showToast(`${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key saved successfully!`, 'success');

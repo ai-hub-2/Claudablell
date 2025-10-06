@@ -41,8 +41,20 @@ def get_api_key(db: Session, provider: str) -> str | None:
 
 def get_all_api_keys(db: Session) -> dict[str, str]:
     """Get all API keys as a dictionary"""
-    api_keys = db.query(APIKey).all()
-    return {key.provider: secret_box.decrypt(key.key) for key in api_keys}
+    try:
+        api_keys = db.query(APIKey).all()
+        result = {}
+        for key in api_keys:
+            try:
+                result[key.provider] = secret_box.decrypt(key.key)
+            except Exception as e:
+                print(f"Failed to decrypt key for provider {key.provider}: {e}")
+                # Skip this key if decryption fails
+                continue
+        return result
+    except Exception as e:
+        print(f"Error in get_all_api_keys: {e}")
+        return {}
 
 def delete_api_key(db: Session, provider: str) -> bool:
     """Delete API key for a provider"""
