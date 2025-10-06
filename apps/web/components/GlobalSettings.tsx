@@ -180,7 +180,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
     id: 'groq',
     name: 'Groq',
     description: 'API key for Groq models (Llama, Mixtral, Gemma)',
-    icon: '/groq.png',
+    icon: '/groq.svg',
     color: '#00A86B',
     getKeyUrl: 'https://console.groq.com/keys',
     placeholder: 'gsk_...',
@@ -190,7 +190,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
     id: 'cohere',
     name: 'Cohere',
     description: 'API key for Cohere models (Command, Embed)',
-    icon: '/cohere.png',
+    icon: '/cohere.svg',
     color: '#FF6B35',
     getKeyUrl: 'https://dashboard.cohere.ai/api-keys',
     placeholder: 'co_...',
@@ -200,7 +200,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
     id: 'mistral',
     name: 'Mistral AI',
     description: 'API key for Mistral models (Mistral Large, Medium)',
-    icon: '/mistral.png',
+    icon: '/mistral.svg',
     color: '#7C3AED',
     getKeyUrl: 'https://console.mistral.ai/api-keys',
     placeholder: 'mistral-...',
@@ -210,7 +210,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
     id: 'perplexity',
     name: 'Perplexity',
     description: 'API key for Perplexity models (Sonar, Online)',
-    icon: '/perplexity.png',
+    icon: '/perplexity.svg',
     color: '#6366F1',
     getKeyUrl: 'https://www.perplexity.ai/settings/api',
     placeholder: 'pplx-...',
@@ -792,6 +792,18 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
                             )}
                             {cli.id === 'gemini' && (
                               <img src="/gemini.png" alt="Gemini" className="w-8 h-8" />
+                            )}
+                            {cli.id === 'groq' && (
+                              <img src="/groq.svg" alt="Groq" className="w-8 h-8" />
+                            )}
+                            {cli.id === 'cohere' && (
+                              <img src="/cohere.svg" alt="Cohere" className="w-8 h-8" />
+                            )}
+                            {cli.id === 'mistral' && (
+                              <img src="/mistral.svg" alt="Mistral" className="w-8 h-8" />
+                            )}
+                            {cli.id === 'perplexity' && (
+                              <img src="/perplexity.svg" alt="Perplexity" className="w-8 h-8" />
                             )}
                           </div>
                           <div className={`flex-1 min-w-0 ${!isInstalled ? 'opacity-40' : ''}`}>
