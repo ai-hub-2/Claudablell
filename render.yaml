@@ -6,6 +6,14 @@ services:
       python3 -m venv .venv
       source .venv/bin/activate
       pip install -r apps/api/requirements.txt
+      # Install Node.js for CLI tools
+      curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+      sudo apt-get install -y nodejs
+      # Install CLI tools
+      npm install -g @anthropic-ai/claude-code
+      npm install -g @openai/codex
+      npm install -g @google/gemini-cli
+      npm install -g @qwen-code/qwen-code
     startCommand: |
       source .venv/bin/activate
       cd apps/api
@@ -19,6 +27,10 @@ services:
         value: production
       - key: DEBUG
         value: false
+      - key: RENDER
+        value: true
+      - key: NODE_PATH
+        value: /usr/bin/node
     disk:
       name: data
       mountPath: /opt/render/project/data

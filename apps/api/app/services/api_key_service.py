@@ -49,7 +49,13 @@ def get_all_api_keys(db: Session) -> dict[str, str]:
                 result[key.provider] = secret_box.decrypt(key.key)
             except Exception as e:
                 print(f"Failed to decrypt key for provider {key.provider}: {e}")
-                # Skip this key if decryption fails
+                # Try to delete the corrupted key
+                try:
+                    db.delete(key)
+                    db.commit()
+                    print(f"Deleted corrupted key for provider {key.provider}")
+                except Exception as delete_error:
+                    print(f"Failed to delete corrupted key: {delete_error}")
                 continue
         return result
     except Exception as e:

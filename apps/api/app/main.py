@@ -71,8 +71,33 @@ app.include_router(vercel_router)  # Vercel integration API
 
 @app.get("/health")
 def health():
-    # Health check (English comments only)
-    return {"ok": True}
+    """Enhanced health check for Render"""
+    try:
+        # Check database connection
+        from app.db.session import engine
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        
+        # Check encryption
+        from app.core.crypto import secret_box
+        test_data = "health_check"
+        encrypted = secret_box.encrypt(test_data)
+        decrypted = secret_box.decrypt(encrypted)
+        
+        return {
+            "ok": True,
+            "database": "connected",
+            "encryption": "working" if decrypted == test_data else "failed",
+            "environment": os.getenv("ENVIRONMENT", "development"),
+            "render": os.getenv("RENDER", "false")
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "environment": os.getenv("ENVIRONMENT", "development")
+        }
 
 
 @app.on_event("startup")

@@ -29,15 +29,26 @@ class ClaudeCodeCLI(BaseCLI):
     async def check_availability(self) -> Dict[str, Any]:
         """Check if Claude Code CLI is available"""
         try:
-            # First try to check if claude CLI is installed and working
-            result = await asyncio.create_subprocess_shell(
-                "claude -h",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await result.communicate()
-
-            if result.returncode != 0:
+            # Check multiple possible locations for claude CLI
+            claude_commands = ["claude", "/usr/bin/claude", "/usr/local/bin/claude"]
+            claude_found = False
+            
+            for cmd in claude_commands:
+                try:
+                    result = await asyncio.create_subprocess_shell(
+                        f"{cmd} -h",
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                    stdout, stderr = await result.communicate()
+                    
+                    if result.returncode == 0:
+                        claude_found = True
+                        break
+                except Exception:
+                    continue
+            
+            if not claude_found:
                 return {
                     "available": False,
                     "configured": False,

@@ -1,11 +1,26 @@
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
+import os
 from app.core.config import settings
 
-# Ensure data directory exists
+# Ensure data directory exists - Fixed for Render
 db_path = settings.database_url.replace("sqlite:///", "")
-Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+try:
+    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+    # Ensure the directory is writable
+    if not os.access(Path(db_path).parent, os.W_OK):
+        # Try alternative path for Render
+        if settings.is_render:
+            alt_path = "/opt/render/project/data"
+            Path(alt_path).mkdir(parents=True, exist_ok=True)
+            settings.database_url = f"sqlite:///{alt_path}/cc.db"
+            db_path = settings.database_url.replace("sqlite:///", "")
+except Exception as e:
+    print(f"Warning: Could not create data directory: {e}")
+    # Fallback to current directory
+    settings.database_url = "sqlite:///cc.db"
+    db_path = "cc.db"
 
 # Create engine with SQLite-specific settings
 connect_args = {}

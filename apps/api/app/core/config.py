@@ -34,7 +34,7 @@ PROJECT_ROOT = find_project_root()
 class Settings(BaseModel):
     api_port: int = int(os.getenv("API_PORT", "8080"))
     
-    # SQLite database URL
+    # SQLite database URL - Fixed for Render
     database_url: str = os.getenv(
         "DATABASE_URL",
         f"sqlite:///{PROJECT_ROOT / 'data' / 'cc.db'}",
@@ -46,6 +46,10 @@ class Settings(BaseModel):
     
     preview_port_start: int = int(os.getenv("PREVIEW_PORT_START", "3100"))
     preview_port_end: int = int(os.getenv("PREVIEW_PORT_END", "3999"))
+    
+    # Environment detection
+    is_production: bool = os.getenv("ENVIRONMENT", "development").lower() == "production"
+    is_render: bool = os.getenv("RENDER", "false").lower() == "true"
 
 
 settings = Settings()

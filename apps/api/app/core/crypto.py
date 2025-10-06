@@ -11,7 +11,16 @@ class SecretBox:
         if key is None:
             # Dev fallback: generate ephemeral key
             key = base64.urlsafe_b64encode(os.urandom(32)).decode()
-        self._fernet = Fernet(key)
+            print(f"Warning: Generated ephemeral encryption key. Data will be lost on restart!")
+        
+        try:
+            self._fernet = Fernet(key)
+        except Exception as e:
+            print(f"Error initializing encryption: {e}")
+            # Generate a new key if the provided one is invalid
+            key = base64.urlsafe_b64encode(os.urandom(32)).decode()
+            self._fernet = Fernet(key)
+            print("Generated new encryption key due to invalid key")
 
     def encrypt(self, plaintext: str) -> str:
         token = self._fernet.encrypt(plaintext.encode("utf-8"))
