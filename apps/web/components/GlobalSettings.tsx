@@ -462,10 +462,16 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
 
   const loadApiKeys = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/settings/api-keys`);
+      console.log('Loading API keys from:', `${API_BASE}/api/settings/api-keys/`);
+      const response = await fetch(`${API_BASE}/api/settings/api-keys/`);
+      console.log('Load response status:', response.status);
+      
       if (response.ok) {
         const keys = await response.json();
+        console.log('Loaded API keys:', keys);
         setApiKeys(keys);
+      } else {
+        console.error('Failed to load API keys, status:', response.status);
       }
     } catch (error) {
       console.error('Failed to load API keys:', error);
@@ -476,22 +482,34 @@ export default function GlobalSettings({ isOpen, onClose, initialTab = 'general'
     setApiKeyLoading(prev => ({ ...prev, [provider]: true }));
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/api-keys`, {
+      console.log('Saving API key for provider:', provider);
+      console.log('API_BASE:', API_BASE);
+      
+      const response = await fetch(`${API_BASE}/api/settings/api-keys/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, key })
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error('Failed to save API key');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to save API key: ${response.status} ${errorText}`);
       }
+      
+      const result = await response.json();
+      console.log('Save result:', result);
       
       setApiKeys(prev => ({ ...prev, [provider]: key }));
       showToast(`${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key saved successfully!`, 'success');
       
     } catch (error) {
       console.error('Failed to save API key:', error);
-      showToast(`Failed to save ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key`, 'error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showToast(`Failed to save ${API_KEY_PROVIDERS.find(p => p.id === provider)?.name} API key: ${errorMessage}`, 'error');
     } finally {
       setApiKeyLoading(prev => ({ ...prev, [provider]: false }));
     }
