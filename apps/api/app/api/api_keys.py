@@ -30,7 +30,8 @@ async def get_api_keys(db: Session = Depends(get_db)) -> Dict[str, str]:
 @router.post("/")
 async def create_or_update_api_key(body: APIKeyCreate, db: Session = Depends(get_db)):
     """Create or update an API key"""
-    if body.provider not in ['anthropic', 'openai', 'google', 'qwen']:
+    valid_providers = ['anthropic', 'openai', 'google', 'qwen', 'groq', 'cohere', 'mistral', 'perplexity']
+    if body.provider not in valid_providers:
         raise HTTPException(status_code=400, detail="Invalid provider")
     
     if not body.key.strip():
@@ -45,7 +46,8 @@ async def create_or_update_api_key(body: APIKeyCreate, db: Session = Depends(get
 @router.delete("/{provider}")
 async def delete_api_key_endpoint(provider: str, db: Session = Depends(get_db)):
     """Delete an API key"""
-    if provider not in ['anthropic', 'openai', 'google', 'qwen']:
+    valid_providers = ['anthropic', 'openai', 'google', 'qwen', 'groq', 'cohere', 'mistral', 'perplexity']
+    if provider not in valid_providers:
         raise HTTPException(status_code=400, detail="Invalid provider")
     
     try:

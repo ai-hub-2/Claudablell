@@ -139,7 +139,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
   {
     id: 'anthropic',
     name: 'Anthropic Claude',
-    description: 'API key for Claude AI models',
+    description: 'API key for Claude AI models (Claude 3.5 Sonnet, Opus, Haiku)',
     icon: '/claude.png',
     color: '#DE7356',
     getKeyUrl: 'https://console.anthropic.com/',
@@ -149,7 +149,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
   {
     id: 'openai',
     name: 'OpenAI',
-    description: 'API key for GPT models',
+    description: 'API key for GPT models (GPT-4, GPT-3.5, o1)',
     icon: '/oai.png',
     color: '#000000',
     getKeyUrl: 'https://platform.openai.com/api-keys',
@@ -159,7 +159,7 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
   {
     id: 'google',
     name: 'Google AI',
-    description: 'API key for Gemini models',
+    description: 'API key for Gemini models (Gemini 2.5 Pro, Flash)',
     icon: '/gemini.png',
     color: '#4285F4',
     getKeyUrl: 'https://aistudio.google.com/app/apikey',
@@ -169,12 +169,52 @@ const API_KEY_PROVIDERS: APIKeyProvider[] = [
   {
     id: 'qwen',
     name: 'Qwen AI',
-    description: 'API key for Qwen models',
+    description: 'API key for Qwen models (Qwen2.5, Qwen3)',
     icon: '/qwen.png',
     color: '#A855F7',
     getKeyUrl: 'https://dashscope.console.aliyun.com/apiKey',
     placeholder: 'sk-...',
     required: true
+  },
+  {
+    id: 'groq',
+    name: 'Groq',
+    description: 'API key for Groq models (Llama, Mixtral, Gemma)',
+    icon: '/groq.png',
+    color: '#00A86B',
+    getKeyUrl: 'https://console.groq.com/keys',
+    placeholder: 'gsk_...',
+    required: false
+  },
+  {
+    id: 'cohere',
+    name: 'Cohere',
+    description: 'API key for Cohere models (Command, Embed)',
+    icon: '/cohere.png',
+    color: '#FF6B35',
+    getKeyUrl: 'https://dashboard.cohere.ai/api-keys',
+    placeholder: 'co_...',
+    required: false
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral AI',
+    description: 'API key for Mistral models (Mistral Large, Medium)',
+    icon: '/mistral.png',
+    color: '#7C3AED',
+    getKeyUrl: 'https://console.mistral.ai/api-keys',
+    placeholder: 'mistral-...',
+    required: false
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity',
+    description: 'API key for Perplexity models (Sonar, Online)',
+    icon: '/perplexity.png',
+    color: '#6366F1',
+    getKeyUrl: 'https://www.perplexity.ai/settings/api',
+    placeholder: 'pplx-...',
+    required: false
   }
 ];
 
